@@ -1,0 +1,51 @@
+<template>
+  <div class="container text-center">
+    <div
+      class="shadow-lg w-full h-48 rounded-lg max-w-xs inline-block text-left"
+    >
+      <div class="flex mt-5 ml-8 mr-8 items-center">
+        <h1 class="font-bold text-lg">
+          {{ sessionName }}
+        </h1>
+        <div v-if="environment === 'local'" class="flex-none flex ml-2 ">
+          <div class="rounded-full h-2 w-2 bg-red-500 inline-block"></div>
+          <!--<p class="text-red-500 inline text-xs">
+            Local
+          </p>-->
+        </div>
+        <div class="text-right flex-grow">
+          <h1
+            class="font-bold text-lg"
+            :class="active ? 'text-green-400' : 'text-gray-500'"
+          >
+            {{ active ? "Active" : "Inactive" }}
+          </h1>
+        </div>
+      </div>
+      <p class="font-bold text-lg ml-8 mt-5">
+        {{ registeredUsers }} registered users
+      </p>
+      <div class="flex mt-5 ml-8 mr-8 items-center justify-between">
+        <button class="rounded-full bg-orange-400 p-2 w-full font-bold m-2">
+          View
+        </button>
+        <button class="rounded-full bg-gray-400 p-2 w-full font-bold m-2">
+          Reset
+        </button>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+export default {
+  props: {
+    sessionName: String,
+    active: Boolean,
+    registeredUsers: Number,
+    environment: String,
+  },
+};
+</script>
+
+<style></style>
