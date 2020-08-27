@@ -64,6 +64,12 @@ export default {
       code: "",
     };
   },
+  mounted() {
+    if (this.$route.query.code) {
+      this.code = this.$route.query.code;
+      this.onSubmit();
+    }
+  },
   methods: {
     onSubmit() {
       fetch(process.env.VUE_APP_TC_API + "/joinSession?code=" + this.code).then(
