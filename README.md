@@ -1,4 +1,4 @@
-# Twincode Administration Console
+# Twincode Frontend
 
 ## Project setup
 

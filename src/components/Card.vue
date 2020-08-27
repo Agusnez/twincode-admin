@@ -26,10 +26,15 @@
         {{ registeredUsers }} registered users
       </p>
       <div class="flex mt-5 ml-8 mr-8 items-center justify-between">
-        <button class="rounded-full bg-orange-400 p-2 w-full font-bold m-2">
+        <button
+          class="rounded-full bg-orange-400 p-2 w-full font-bold m-2 focus:outline-none focus:shadow-outline"
+        >
           View
         </button>
-        <button class="rounded-full bg-gray-400 p-2 w-full font-bold m-2">
+        <button
+          @click="onReset"
+          class="rounded-full bg-gray-400 p-2 w-full font-bold m-2 focus:outline-none focus:shadow-outline"
+        >
           Reset
         </button>
       </div>
@@ -44,6 +49,22 @@ export default {
     active: Boolean,
     registeredUsers: Number,
     environment: String,
+  },
+  methods: {
+    onReset() {
+      fetch(process.env.VUE_APP_TC_API + "/resetSession", {
+        method: "POST", // or 'PUT'
+        body: JSON.stringify({ session: this.sessionName }), // data can be `string` or {object}!
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: localStorage.adminSecret,
+        },
+      }).then((response) => {
+        if (response.status == 200) {
+          alert("Session restarted successfully");
+        }
+      });
+    },
   },
 };
 </script>
