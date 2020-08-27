@@ -13,7 +13,7 @@ const routes = [
     meta: { title: "Login - Twincode" },
   },
   {
-    path: "/Signup",
+    path: "/signup",
     component: Signup,
     name: "Signup",
     meta: { title: "Signup - Twincode" },

@@ -204,16 +204,14 @@
           </p>
         </div>
       </div>
-      <div v-if="submitionOk" class="w-full lg:w-2/3 p-3">
-        <img class="w-full md:w-2/3 p-3 mb-3" src="/static/TwinCodeLogo.svg"/>
+      <div v-if="submitionOk" class="w-full h-screen lg:w-2/3 p-3">
+        <img class="w-full md:w-2/3 p-3 mb-3" src="@/assets/tc_color.png"/>
         <div>
           <div
-            class="bg-teal-100 border-teal-600 p-8 border-t-8 bg-white mb-6 rounded-md shadow-lg m-5"
+            class="bg-teal-100 border-teal-600 p-8 border-t-8 mb-6 rounded-md shadow-lg m-5"
           >
           <h1 class="font-bold text-2xl mb-4">Thanks for participating!</h1>
-          <p class="font-medium">You will receive the instructions by email. For any other inquiries please contact with pablofm@us.es. </p>
-          <p class="font-medium">Meanwhile, questions about the experiment sp20 can be sent to: pablofm@us.es., with the subject: "Twin Code sp20"
-          </p>
+          <p class="font-medium" v-html="registrationText"> </p>
           </div>
           <div class="text-center">
             <p class="text-grey-dark text-sm inline">
@@ -249,6 +247,7 @@ export default {
         knownLanguages: "",
       },
       submitionOk: false,
+      registrationText: "",
     };
   },
   methods: {
@@ -311,9 +310,12 @@ export default {
       }).then((response) => {
         if (response.status === 200) {
           this.submitionOk = true;
+          return response.json();
         } else {
           this.errors.push("There was an error in the request. Check the form.");
         }
+      }).then((data) => {
+        this.registrationText = data.registrationText;
       });
     },
     dateValid() {
