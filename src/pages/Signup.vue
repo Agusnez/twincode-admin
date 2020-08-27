@@ -302,7 +302,7 @@ export default {
       e.preventDefault();
     },
     onSubmit() {
-      fetch("/signup", {
+      fetch(process.env.VUE_APP_TC_API + "/signup", {
         method: "POST",
         body: JSON.stringify(this.details),
         headers: {
