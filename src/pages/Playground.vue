@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="container h-screen mx-auto" v-if="!finished && !starting">
+    <div class="container h-screen mx-auto" v-if="!finished">
       <div class="shadow w-full bg-grey-light h-3">
         <div
           ref="timeBar"
@@ -13,13 +13,17 @@
           <div>{{ (maxTime - timePassed) | secondsToString }}</div>
           <div>{{ exerciseDescription }}</div>
           <div style="height: 60vh;" @keyup.ctrl.83="validate">
+            <div
+              ref="pairCursor"
+              id="pairCursor"
+              class="absolute bg-yellow-500 hidden"
+            ></div>
             <codemirror
               ref="cmEditor"
               v-model="code"
+              id="codemirror"
               :options="cmOption"
-              @blur="onCmBlur($event)"
-              @focus="onCmFocus($event)"
-              @ready="onCmReady($event)"
+              :events="['inputRead', 'change']"
             ></codemirror>
           </div>
           <div
@@ -36,6 +40,7 @@
             class="bg-red-200 p-3 rounded-md border text-gray-800"
           >
             <p>Sorry, this is not the right solution. Try again!</p>
+            <p class="mt-1 text-red-900">{{ excerciseErrorMessage }}</p>
           </div>
           <div class="mt-2">
             <!--<button
@@ -93,13 +98,11 @@
           Session is over
         </h1>
         <div
-          class="bg-teal-100 border-teal-600 p-8 border-t-8 bg-white mb-6 rounded-lg shadow-lg m-5"
+          class="bg-teal-100 border-teal-600 p-8 border-t-8 bg-white mb-6 rounded-md shadow-lg m-5"
         >
           <h1 class="font-bold text-2xl mb-4">Congratulations!</h1>
           <p class="font-medium">
-            Thank you for participating in this session. Further questions about
-            the experiment SESSIONID can be sent to: xxxx@xxxx.org, with the
-            subject [FLOCK SESSIONID]
+            {{ finishMessage }}
           </p>
         </div>
         <div class="text-center">
@@ -126,7 +129,7 @@
       style="backdrop-filter: blur(2px);"
     >
       <div
-        class="border-teal-600 p-8 border-t-8 bg-white mb-6 rounded-lg shadow-lg m-5 w-2/3"
+        class="border-teal-600 p-8 border-t-8 bg-white mb-6 rounded-md shadow-lg m-5 w-2/3"
       >
         <h1 class="font-bold text-2xl mb-4">A new test begins!</h1>
         <h2 class="font-bold text-xl text-gray-600">
@@ -158,6 +161,10 @@ export default {
         lineNumbers: true,
         mode: "text/javascript",
       },
+      firstLoad: true,
+      awaiting: null,
+      cursorLeftPosition: 0,
+      cursorTopPosition: 0,
       myMessage: "",
       uid: "",
       rid: "",
@@ -174,6 +181,7 @@ export default {
       maxTime: 0,
       timePassed: 0,
       isExerciseCorrect: null,
+      excerciseErrorMessage: "",
     };
   },
   filters: {
@@ -193,20 +201,38 @@ export default {
         this.newMessage(pack.data, false);
       }
     },
-    text(pack) {
+    refreshCode(pack) {
       console.log(
         "text event triggered with data <" + this.toJSON(pack) + "> "
       );
-      if (pack.uid != this.uid && pack.rid == this.rid) {
+      this.$refs.cmEditor.codemirror.replaceRange(
+        pack.change.text,
+        pack.change.from,
+        pack.change.to,
+        "server"
+      );
+      /*if (pack.uid != this.uid && pack.rid == this.rid) {
         this.lastReceived = pack.data;
         this.code = pack.data;
         console.log("  --> Updating code!");
       } else {
         console.log("  --> Ignored!");
-      }
+      }*/
     },
     finish() {
-      this.finished = true;
+      fetch(
+        process.env.VUE_APP_TC_API + "/finishMessage?code=" + localStorage.code,
+        {
+          method: "GET",
+        }
+      )
+        .then((response) => {
+          return response.json();
+        })
+        .then((response) => {
+          this.finished = true;
+          this.finishMessage = response.finishMessage;
+        });
     },
     loadTest(pack) {
       this.finished = false;
@@ -215,6 +241,11 @@ export default {
       this.testDescription = pack.data.testDescription;
       this.peerChange = !this.peerChange;
       this.$refs.messageContainer.innerHTML = "";
+    },
+    cursorActivity(data) {
+      this.cursorLeftPosition = data.left;
+      this.cursorTopPosition = data.top;
+      this.updateCursorLocation();
     },
     newExercise(pack) {
       this.loadingTest = false;
@@ -256,21 +287,11 @@ export default {
     this.$socket.client.emit("clientReconnection", localStorage.token);
   },
   watch: {
-    code: function(newVal) {
-      this.clearResult();
-      console.log("Code updated:");
-      if (newVal != this.lastReceived) {
-        this.$socket.client.emit("text", this.pack(newVal));
-        console.log(
-          "  --> Emitting text event with data <" +
-            this.toJSON(this.pack(newVal)) +
-            "> "
-        );
-      } else {
-        console.log(
-          "  --> Text updated from external source: no event to be emitted"
-        );
-      }
+    cursorTopPosition: function(val) {
+      console.log(val);
+    },
+    cursorLeftPosition: function(val) {
+      console.log(val);
     },
   },
   methods: {
@@ -299,18 +320,26 @@ export default {
       container.scrollTop = container.scrollHeight;
     },
     validate() {
-      this.clearResult("block");
       try {
         const ret = this.evaluateCode(this.code);
         if (ret) {
           this.valid(ret);
+        } else {
+          this.isExerciseCorrect = false;
+          this.excerciseErrorMessage = "You should return the solution.";
         }
       } catch (e) {
+        this.isExerciseCorrect = false;
+        this.excerciseErrorMessage = e;
         console.log("ERROR HERE: ", e);
       }
+      setTimeout(() => {
+        this.isExerciseCorrect = null;
+        this.excerciseErrorMessage = "";
+      }, 5000);
     },
     valid(v) {
-      fetch("/verify", {
+      fetch(process.env.VUE_APP_TC_API + "/verify", {
         method: "POST",
         body: JSON.stringify({
           solution: v,
@@ -326,9 +355,6 @@ export default {
           });
         }
       });
-    },
-    clearResult() {
-      console.log("Clearing result!");
     },
     onCmBlur(cm) {
       console.log("cm blur!", cm);
@@ -371,6 +397,85 @@ export default {
     evaluateCode(code) {
       return Function('"use strict";' + code)();
     },
+    handleResize() {
+      const elemento = document.getElementsByClassName("CodeMirror-scroll")[0];
+      const newLeft =
+        document.getElementById("codemirror").getBoundingClientRect().left +
+        this.cursorLeftPosition +
+        30 -
+        elemento.scrollLeft;
+      document.getElementById("pairCursor").style.left = newLeft + "px";
+    },
+    handleScroll() {
+      const cmWidth = document.getElementById("codemirror").offsetWidth;
+      const cmHeight = document.getElementById("codemirror").offsetHeight + 19;
+
+      const elemento = document.getElementsByClassName("CodeMirror-scroll")[0];
+      const newTop =
+        document.getElementById("codemirror").getBoundingClientRect().top +
+        this.cursorTopPosition +
+        5 -
+        elemento.scrollTop;
+
+      const newLeft =
+        document.getElementById("codemirror").getBoundingClientRect().left +
+        this.cursorLeftPosition +
+        30 -
+        elemento.scrollLeft;
+      if (cmWidth > newLeft) {
+        this.$refs.pairCursor.style.left = newLeft + "px";
+      }
+      if (cmHeight > newTop) {
+        this.$refs.pairCursor.style.top = newTop + "px";
+      }
+
+      console.log(elemento.scrollTop);
+    },
+    inputRead(i, c) {
+      this.$socket.client.emit("updateCode", c);
+    },
+    cursorActivity(doc) {
+      this.$socket.client.emit(
+        "cursorActivity",
+        doc.cursorCoords(false, "relative")
+      );
+    },
+    onCmCodeChange(e, c) {
+      const changeObj = {
+        author: this.$socket.client.id,
+        change: c,
+      };
+      if (c.origin != "server") {
+        this.$socket.client.emit("updateCode", this.pack(changeObj));
+      }
+      this.firstLoad = false;
+    },
+    updateCursorLocation() {
+      const cmWidth = document.getElementById("codemirror").offsetWidth;
+      const cmHeight = document.getElementById("codemirror").offsetHeight;
+      console.log(cmHeight);
+
+      const elemento = document.getElementsByClassName("CodeMirror-scroll")[0];
+
+      const top =
+        document.getElementById("codemirror").getBoundingClientRect().top +
+        this.cursorTopPosition +
+        5 -
+        elemento.scrollTop;
+      const left =
+        document.getElementById("codemirror").getBoundingClientRect().left +
+        this.cursorLeftPosition +
+        30 -
+        elemento.scrollLeft;
+      console.log(top);
+      console.log(cmHeight);
+      if (cmWidth > left) {
+        this.$refs.pairCursor.style.left = left + "px";
+      }
+      if (cmHeight > top) {
+        this.$refs.pairCursor.style.top = top + "px";
+      }
+    },
   },
   computed: {
     cmEditor() {
@@ -378,11 +483,32 @@ export default {
     },
   },
   mounted() {
+    this.$refs.cmEditor.codemirror.on("change", this.onCmCodeChange);
+    this.$refs.cmEditor.codemirror.on("cursorActivity", this.cursorActivity);
+    const elemento = document.getElementsByClassName("CodeMirror-scroll")[0];
+    elemento.addEventListener("scroll", this.handleScroll);
+
+    // Cursor functionaliy disabled
+    /*let toggle = true;
+    setInterval(function() {
+      if (toggle) {
+        document.getElementById("pairCursor").classList.add("invisible");
+      } else {
+        document.getElementById("pairCursor").classList.remove("invisible");
+      }
+      toggle = !toggle;
+    }, 750);*/
+
     console.log("the codemirror instance object", this.cm);
     //this.loadExercise();
     this.$refs.timeBar.style.width = `${((this.maxTime - this.timePassed) /
       this.maxTime) *
       100}%`;
+  },
+  beforeDestroy() {
+    window.removeEventListener("resize", this.handleScroll);
+    const elemento = document.getElementsByClassName("CodeMirror-scroll")[0];
+    elemento.removeEventListener("scroll", this.handleScroll);
   },
 };
 </script>
@@ -391,5 +517,10 @@ export default {
 .CodeMirror {
   border: 1px solid #eee;
   height: 50vh !important;
+}
+#pairCursor {
+  width: 2px;
+  height: 19px;
+  z-index: 9999;
 }
 </style>
