@@ -34,13 +34,16 @@
               Great, you got it right! We will let the rest of the people
               finish. Please, wait until the time is up.
             </p>
+            <p class="mt-1 text-black-900">Value returned: {{ returnValue }}</p>
           </div>
           <div
             v-if="isExerciseCorrect === false"
             class="bg-red-200 p-3 rounded-md border text-gray-800"
           >
             <p>Sorry, this is not the right solution. Try again!</p>
-            <p class="mt-1 text-red-900">{{ excerciseErrorMessage }}</p>
+            <p class="mt-1 text-red-900">
+              Value returned: {{ excerciseErrorMessage || returnValue }}
+            </p>
           </div>
           <div class="mt-2">
             <!--<button
@@ -182,6 +185,7 @@ export default {
       timePassed: 0,
       isExerciseCorrect: null,
       excerciseErrorMessage: "",
+      returnValue: "",
     };
   },
   filters: {
@@ -239,7 +243,7 @@ export default {
       this.loadingTest = true;
       this.starting = false;
       this.testDescription = pack.data.testDescription;
-      this.peerChange = !this.peerChange;
+      this.peerChange = pack.data.peerChange;
       this.$refs.messageContainer.innerHTML = "";
     },
     cursorActivity(data) {
@@ -352,6 +356,7 @@ export default {
         if (response.status == 200) {
           response.json().then((data) => {
             this.isExerciseCorrect = data.result;
+            this.returnValue = v;
           });
         }
       });
