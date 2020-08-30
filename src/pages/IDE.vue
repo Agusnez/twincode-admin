@@ -52,6 +52,7 @@
         </div>
 
         <div v-if="returnValue" class="p-3 bg-black text-white mt-2 rounded-md">
+          <p>Your console log:</p>
           <p class="mt-1 text-black-900" v-for="log in logs" :key="log">
             <pre>$> {{ log }} </pre>
           </p>
@@ -97,6 +98,7 @@ export default {
   },
   methods: {
     validate() {
+      this.clearResult();
       try {
         let ret = this.evaluateCode(this.code);
         if (ret) {
