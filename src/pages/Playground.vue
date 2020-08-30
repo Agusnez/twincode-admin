@@ -253,6 +253,7 @@ export default {
     },
     newExercise(pack) {
       this.loadingTest = false;
+      this.starting = false;
       this.maxTime = pack.data.maxTime;
       this.timePassed = 0;
       this.isExerciseCorrect = null;
