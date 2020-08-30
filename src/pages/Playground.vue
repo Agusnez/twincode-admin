@@ -30,11 +30,7 @@
             v-if="isExerciseCorrect"
             class="flex bg-green-200 p-3 mt-5 rounded-md border text-gray-800"
           >
-            <p>
-              Great, you got it right! We will let the rest of the people
-              finish. Please, wait until the time is up.
-            </p>
-            <p class="mt-1 text-black-900">Value returned: {{ returnValue }}</p>
+            <p class="mt-1 text-black-900">You got it right! Value returned: {{ returnValue }}</p>
             <div class="flex-grow text-right">
             <button @click="clearResult">
               <img
@@ -55,7 +51,7 @@
             </p>
           </div>
 
-          <div v-if="isExerciseCorrect" class="p-3 bg-black text-white mt-2 rounded-md">
+          <div v-if="returnValue" class="p-3 bg-black text-white mt-2 rounded-md">
             <p>Your console log:</p>
             <p class="mt-1 text-black-900" v-for="log in logs" :key="log">
               <pre>$> {{ log }} </pre>
@@ -204,7 +200,7 @@ export default {
       isExerciseCorrect: null,
       excerciseErrorMessage: "",
       returnValue: "",
-      token: localStorage.get("code"),
+      token: localStorage.getItem("code"),
       println: window.println,
       logs: window.logs,
     };
