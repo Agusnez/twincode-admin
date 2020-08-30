@@ -3,6 +3,7 @@ import Signup from "./pages/Signup";
 import Lobby from "./pages/Lobby";
 import Playground from "./pages/Playground";
 import Admin from "./pages/Admin";
+import IDE from "./pages/IDE";
 import PageNotFound from "./pages/PageNotFound";
 
 const routes = [
@@ -35,6 +36,12 @@ const routes = [
     component: Playground,
     name: "Playground",
     meta: { title: "Twincode" },
+  },
+  {
+    path: "/ide",
+    component: IDE,
+    name: "IDE",
+    meta: { title: "IDE - Twincode" },
   },
   {
     path: "*",

@@ -7,6 +7,12 @@
     <link rel="icon" href="<%= BASE_URL %>favicon.ico" />
     <meta name="theme-color" content="#1A202C" />
     <!--<title><%= htmlWebpackPlugin.options.title %></title>-->
+    <script>
+      window.logs = [];
+      function println(log) {
+        window.logs.push(log);
+      }
+    </script>
   </head>
   <body>
     <noscript>
