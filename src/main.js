@@ -12,7 +12,13 @@ Vue.use(VueRouter);
 
 const DEFAULT_TITLE = "Twincode";
 
-const router = new VueRouter({ mode: "history", routes });
+const router = new VueRouter({
+  mode: "history",
+  routes,
+  scrollBehavior() {
+    return { x: 0, y: 0 };
+  },
+});
 router.afterEach((to) => {
   Vue.nextTick(() => {
     document.title = to.meta.title || DEFAULT_TITLE;

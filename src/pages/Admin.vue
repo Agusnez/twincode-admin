@@ -1,5 +1,5 @@
 <template>
-  <div id="app">
+  <div>
     <Header v-if="loggedIn" />
     <div v-if="loggedIn" class="text-center">
       <div class="inline-block w-full max-w-screen-xl">
@@ -17,7 +17,7 @@
             :active="session.active"
             :registeredUsers="session.users.length"
           />
-          <NewCard />
+          <NewCard @newSession="showNewSessionModal()" />
         </div>
       </div>
     </div>
@@ -48,6 +48,48 @@
         </div>
       </div>
     </div>
+    <Modal v-model="showModal" title="New session">
+      <form @submit.prevent="createSession">
+        <div class="mt-5">
+          <label>Name:</label>
+          <input
+            v-model="newSession.name"
+            type="text"
+            class="border rounded-sm ml-2"
+          />
+        </div>
+
+        <div class="mt-5">
+          <label>Token list:</label>
+          <input
+            v-model="newSession.tokens"
+            type="text"
+            class="border rounded-sm ml-2"
+          />
+        </div>
+        <div class="mt-5 mb-5">
+          <input
+            v-model="newSession.tokenPairing"
+            type="checkbox"
+            class="border rounded-sm mr-2"
+          />
+          <label
+            >Participants with the same token cannot be paired together</label
+          >
+        </div>
+      </form>
+      <div v-if="newSession.errors" class="mb-5">
+        <p class="text-red-700">{{ this.newSession.errors }}</p>
+      </div>
+      <template v-slot:actionButtons>
+        <button
+          @click="createSession()"
+          class="px-4 bg-transparent p-3 rounded-lg bg-orange-400 hover:bg-orange-300 mr-2 focus:outline-none focus:shadow-outline"
+        >
+          Save &amp; go to exercise configuration
+        </button>
+      </template>
+    </Modal>
   </div>
 </template>
 
@@ -55,27 +97,63 @@
 import Header from "../components/Header";
 import Card from "../components/Card";
 import NewCard from "../components/NewCard";
+import Modal from "../components/Modal";
 
 export default {
-  name: "App",
   data() {
     return {
       loggedIn: false,
       sessions: null,
       secret: null,
       error: false,
+      showModal: false,
+      newSession: {
+        name: "",
+        tokens: "",
+        tokenPairing: false,
+        errors: null,
+      },
     };
   },
   components: {
     Header,
     Card,
     NewCard,
+    Modal,
   },
   created() {
     document.body.classList.add("bg-gray-800");
     this.logIn();
   },
   methods: {
+    createSession() {
+      let session = {};
+      session.tokens = this.newSession.tokens.split(",");
+      session.name = this.newSession.name;
+      session.tokenPairing = this.newSession.tokenPairing;
+      console.log(session);
+      fetch(`${process.env.VUE_APP_TC_API}/sessions`, {
+        method: "POST",
+        headers: {
+          Authorization: localStorage.adminSecret,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(session),
+      })
+        .then((response) => {
+          if (response.status == 200) {
+            alert("Session created successfully");
+            this.showModal = false;
+          }
+          return response.json();
+        })
+        .then((response) => {
+          this.newSession.errors = response.errorMsg;
+          setTimeout(() => {
+            this.newSession.errors = null;
+          }, 5000);
+        });
+    },
     onSubmit() {
       localStorage.adminSecret = this.secret;
       this.logIn();
@@ -106,6 +184,9 @@ export default {
         .then((json) => {
           this.sessions = json;
         });
+    },
+    showNewSessionModal() {
+      this.showModal = true;
     },
   },
 };

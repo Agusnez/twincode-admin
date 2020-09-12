@@ -28,6 +28,7 @@
       <div class="flex mt-5 ml-8 mr-8 items-center justify-between">
         <button
           class="rounded-full bg-orange-400 p-2 w-full font-bold m-2 focus:outline-none focus:shadow-outline"
+          @click="loadSessionDetails()"
         >
           View
         </button>
@@ -63,6 +64,11 @@ export default {
         if (response.status == 200) {
           alert("Session restarted successfully");
         }
+      });
+    },
+    loadSessionDetails() {
+      this.$router.push({
+        path: `/administration/sessions/${this.sessionName}`,
       });
     },
   },

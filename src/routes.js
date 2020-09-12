@@ -3,6 +3,8 @@ import Signup from "./pages/Signup";
 import Lobby from "./pages/Lobby";
 import Playground from "./pages/Playground";
 import Admin from "./pages/Admin";
+import SessionDetails from "./pages/SessionDetails";
+import ExerciseConfiguration from "./pages/ExerciseConfiguration";
 import IDE from "./pages/IDE";
 import PageNotFound from "./pages/PageNotFound";
 
@@ -29,6 +31,18 @@ const routes = [
     path: "/administration",
     component: Admin,
     name: "Administration",
+    meta: { title: "Admin console - Twincode" },
+  },
+  {
+    path: "/administration/sessions/:sessionName",
+    component: SessionDetails,
+    name: "Session details",
+    meta: { title: "Admin console - Twincode" },
+  },
+  {
+    path: "/administration/exercises/:sessionName",
+    component: ExerciseConfiguration,
+    name: "Exercise configuration",
     meta: { title: "Admin console - Twincode" },
   },
   {

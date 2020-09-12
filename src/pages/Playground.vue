@@ -30,15 +30,17 @@
             v-if="isExerciseCorrect"
             class="flex bg-green-200 p-3 mt-5 rounded-md border text-gray-800"
           >
-            <p class="mt-1 text-black-900">You got it right! Value returned: {{ returnValue }}</p>
+            <p class="mt-1 text-black-900">
+              You got it right! Value returned: {{ returnValue }}
+            </p>
             <div class="flex-grow text-right">
-            <button @click="clearResult">
-              <img
-                class="w-4"
-                src="https://img.icons8.com/small/32/000000/close-window.png"
-              />
-            </button>
-          </div>
+              <button @click="clearResult">
+                <img
+                  class="w-4"
+                  src="https://img.icons8.com/small/32/000000/close-window.png"
+                />
+              </button>
+            </div>
           </div>
 
           <div
@@ -51,12 +53,12 @@
             </p>
           </div>
 
-          <div v-if="returnValue" class="p-3 bg-black text-white mt-2 rounded-md">
+          <!--<div v-if="returnValue" class="p-3 bg-black text-white mt-2 rounded-md">
             <p>Your console log:</p>
             <p class="mt-1 text-black-900" v-for="log in logs" :key="log">
               <pre>$> {{ log }} </pre>
             </p>
-          </div>
+          </div>-->
 
           <div class="mt-2">
             <!--<button
@@ -355,10 +357,9 @@ export default {
         this.excerciseErrorMessage = e;
         console.log("ERROR HERE: ", e);
       }
-      /*setTimeout(() => {
-        this.isExerciseCorrect = null;
-        this.excerciseErrorMessage = "";
-      }, 5000);*/
+      setTimeout(() => {
+        this.clearResult();
+      }, 5000);
     },
     clearResult() {
       this.isExerciseCorrect = null;
