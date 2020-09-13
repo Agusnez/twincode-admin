@@ -10,6 +10,7 @@
   "dependencies": {
     "core-js": "^3.6.4",
     "socket.io-client": "^2.3.0",
+    "tailwindcss-toggle": "github:TowelSoftware/tailwindcss-toggle",
     "vue": "^2.6.11",
     "vue-codemirror": "^4.0.6",
     "vue-router": "^3.4.3",

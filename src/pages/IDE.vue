@@ -97,7 +97,11 @@ export default {
     };
   },
   methods: {
-    validate() {
+    validate(e) {
+      if (e) {
+        console.log("preventing");
+        e.preventDefault();
+      }
       this.clearResult();
       try {
         let ret = this.evaluateCode(this.code);
@@ -131,6 +135,17 @@ export default {
   mounted() {
     console.log("the codemirror instance object", this.cm);
     document.getElementsByTagName("body")[0].classList += "bg-gray-200";
+    
+    // Disable ctrl+s shortkey in Windows or Linux
+    document.body.addEventListener('keydown', event => {
+     if (event.ctrlKey || event.metaKey) {
+      switch (String.fromCharCode(event.which).toLowerCase()) {
+        case "s":
+          event.preventDefault();
+          break;
+      }
+     }
+    });
   },
 };
 </script>

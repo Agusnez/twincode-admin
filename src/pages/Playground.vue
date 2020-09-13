@@ -12,7 +12,7 @@
         <div class="w-2/3 p-2">
           <div>{{ (maxTime - timePassed) | secondsToString }}</div>
           <div>{{ exerciseDescription }}</div>
-          <div style="height: 60vh;" @keyup.ctrl.83="validate">
+          <div style="height: 60vh;" @keyup.ctrl.83="validate" >
             <div
               ref="pairCursor"
               id="pairCursor"
@@ -45,20 +45,28 @@
 
           <div
             v-if="isExerciseCorrect === false"
-            class="bg-red-200 p-3 rounded-md border text-gray-800"
+            class="bg-red-200 p-3 rounded-md border text-gray-800 relative"
           >
             <p>Sorry, this is not the right solution. Try again!</p>
             <p class="mt-1 text-red-900">
               Value returned: {{ excerciseErrorMessage || returnValue }}
             </p>
+            <div class="absolute top-0 right-0 mt-1 mr-1">
+              <button @click="clearResult">
+                <img
+                  class="w-4"
+                  src="https://img.icons8.com/small/32/000000/close-window.png"
+                />
+              </button>
+            </div>
           </div>
 
-          <!--<div v-if="returnValue" class="p-3 bg-black text-white mt-2 rounded-md">
+          <div v-if="returnValue" class="p-3 bg-black text-white mt-2 rounded-md">
             <p>Your console log:</p>
             <p class="mt-1 text-black-900" v-for="log in logs" :key="log">
               <pre>$> {{ log }} </pre>
             </p>
-          </div>-->
+          </div>
 
           <div class="mt-2">
             <!--<button
@@ -173,7 +181,7 @@ export default {
   },
   data() {
     return {
-      code: `return 0;\n`,
+      code: ``,
       cmOption: {
         tabSize: 4,
         styleActiveLine: true,
@@ -264,6 +272,8 @@ export default {
       this.testDescription = pack.data.testDescription;
       this.peerChange = pack.data.peerChange;
       this.$refs.messageContainer.innerHTML = "";
+      this.code = "";
+      this.clearResult();
     },
     cursorActivity(data) {
       this.cursorLeftPosition = data.left;
@@ -281,6 +291,7 @@ export default {
       this.$refs.timeBar.classList.add("bg-green-500");
       this.exerciseDescription = pack.data.exerciseDescription;
       this.exerciseType = pack.data.exerciseType;
+      this.clearResult();
     },
     reconnect() {
       this.$socket.client.emit("clientReconnection", localStorage.token);
@@ -344,6 +355,7 @@ export default {
       container.scrollTop = container.scrollHeight;
     },
     validate() {
+      this.clearResult();
       try {
         const ret = this.evaluateCode(this.code);
         if (ret) {
@@ -357,12 +369,11 @@ export default {
         this.excerciseErrorMessage = e;
         console.log("ERROR HERE: ", e);
       }
-      setTimeout(() => {
-        this.clearResult();
-      }, 5000);
     },
     clearResult() {
       this.isExerciseCorrect = null;
+      this.excerciseErrorMessage  = "";
+      this.returnValue = "";
       this.errorMessage = "";
       window.logs = [];
       this.logs = window.logs;
@@ -528,6 +539,17 @@ export default {
       }
       toggle = !toggle;
     }, 750);*/
+
+    // Disable ctrl+s shortkey in Windows or Linux
+    document.body.addEventListener('keydown', event => {
+     if (event.ctrlKey || event.metaKey) {
+      switch (String.fromCharCode(event.which).toLowerCase()) {
+        case "s":
+          event.preventDefault();
+          break;
+      }
+     }
+    });
 
     console.log("the codemirror instance object", this.cm);
     //this.loadExercise();

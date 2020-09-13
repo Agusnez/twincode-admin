@@ -9,7 +9,15 @@
           </h1>
         </div>
       </div>
-      <div class="p-3 text-left max-w-4xl mx-auto mb-20">
+      <div class="p-3 text-left max-w-4xl mx-auto mb-20 relative">
+        <label class="absolute top-0 right-0 mr-16 text-gray-800"
+          >Activation toggle:
+        </label>
+        <ToggleSwitch
+          class="absolute top-0 right-0 mr-1"
+          v-model="session.active"
+          @input="toggleActivation()"
+        />
         <form @submit.prevent="updateSession()">
           <div class="mt-5">
             <label>Name:</label>
@@ -64,6 +72,15 @@
             Exercise configuration
           </button>
         </div>
+        <div class="mt-10 border p-3 rounded-md">
+          <h2 class="mb-3 text-md font-light">Danger zone:</h2>
+          <button
+            class="mt-3 ml-2 p-3 rounded-md bg-gray-100 border px-5 text-gray-800 hover:bg-red-200 hover:border-red-300 hover:text-red-800"
+            @click="deleteSession()"
+          >
+            Delete session
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -72,10 +89,12 @@
 <script>
 import Header from "../components/Header";
 import Table from "../components/Table";
+import ToggleSwitch from "../components/ToggleSwitch";
 export default {
   components: {
     Header,
     Table,
+    ToggleSwitch,
   },
   data() {
     return {
@@ -83,6 +102,7 @@ export default {
         name: null,
         tokens: null,
         tokenPairing: null,
+        active: null,
       },
       participants: [],
       tests: [],
@@ -110,6 +130,7 @@ export default {
             this.session.name = retrievedSession.name;
             this.session.tokens = retrievedSession.tokens;
             this.session.tokenPairing = retrievedSession.tokenPairing;
+            this.session.active = retrievedSession.active;
           }
         });
     },
@@ -170,6 +191,47 @@ export default {
     loadExerciseConfiguration() {
       this.$router.push({
         path: `/administration/exercises/${this.$route.params.sessionName}`,
+      });
+    },
+    deleteSession() {
+      var r = confirm(
+        "You are going to delete session " +
+          this.$route.params.sessionName +
+          ". This action cannot be undone. Are you sure?"
+      );
+      if (r) {
+        fetch(
+          `${process.env.VUE_APP_TC_API}/sessions/${this.$route.params.sessionName}`,
+          {
+            method: "DELETE",
+            headers: {
+              Authorization: localStorage.adminSecret,
+            },
+          }
+        ).then((response) => {
+          if (response.status == 200) {
+            this.$router.push({
+              path: `/administration`,
+            });
+          }
+        });
+      }
+    },
+    toggleActivation() {
+      fetch(
+        `${process.env.VUE_APP_TC_API}/sessions/${this.$route.params.sessionName}/toggleActivation`,
+        {
+          method: "PUT",
+          headers: {
+            Authorization: localStorage.adminSecret,
+          },
+        }
+      ).then((response) => {
+        if (response.status == 200) {
+          alert(
+            `Session is now ${this.session.active ? "active!" : "inactive!"}`
+          );
+        }
       });
     },
   },

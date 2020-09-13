@@ -22,15 +22,102 @@
             :body="orderedTests"
             v-model="selectedTest"
           />
+          <button
+            class="mt-3 p-1 rounded-md bg-gray-100 border px-5 text-gray-800 hover:bg-green-200 hover:border-green-300 hover:text-green-800"
+            @click="createTest()"
+          >
+            + Add test
+          </button>
+          <button
+            class="mt-3 ml-2 p-1 rounded-md bg-gray-100 border px-5 text-red-800 hover:bg-red-200 hover:border-red-300"
+            @click="removeTest()"
+          >
+            - Remove test
+          </button>
         </div>
-        <div v-if="tests.length > 0" class="mt-10">
+        <div v-if="tests != undefined && tests.length > 0" class="mt-10">
+          <h2 class="mb-3 text-md font-light">Test:</h2>
+          <div class="border items-center py-6 mt-6">
+            <div class="mt-4 max-w-xl mx-auto">
+              <label
+                class="align-middle text-gray-700 text-sm font-bold mb-2"
+                for="name"
+              >
+                Name:
+              </label>
+              <input
+                class="ml-2 appearance-none border rounded py-2 px-3 w-40 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                id="name"
+                type="text"
+                v-model="tests[selectedTest].name"
+              />
+            </div>
+            <div class="mt-4 max-w-xl mx-auto">
+              <label
+                class="align-top text-gray-700 text-sm font-bold mb-2"
+                for="description"
+              >
+                Description:
+              </label>
+              <textarea
+                class="ml-2 appearance-none border rounded py-2 px-3 w-10/12 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                id="description"
+                type="text"
+                v-model="tests[selectedTest].description"
+              />
+            </div>
+            <div class="mt-4 max-w-xl mx-auto">
+              <label
+                class="align-middle text-gray-700 text-sm font-bold mb-2"
+                for="time"
+              >
+                Preparation time:
+              </label>
+              <input
+                class="ml-2 appearance-none border rounded py-2 px-3 w-20 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                id="time"
+                type="number"
+                v-model="tests[selectedTest].time"
+              />
+              <p class="inline text-gray-700 font-light mx-3">seconds</p>
+            </div>
+            <div class="mt-4 max-w-xl mx-auto">
+              <label
+                class="align-middle text-gray-700 text-sm font-bold mb-2"
+                for="peerChange"
+              >
+                Change gender:
+              </label>
+              <input
+                class="ml-2"
+                id="peerChange"
+                type="checkbox"
+                v-model="tests[selectedTest].peerChange"
+              />
+            </div>
+          </div>
+        </div>
+        <div
+          v-if="tests != undefined && tests.length > 0"
+          class="mt-10 relative"
+        >
           <h2 class="mb-3 text-md font-light">Exercises:</h2>
           <ButtonSelector
             v-model="selectedExerciseIndex"
-            :listOfValues="tests[this.selectedTest].exercises"
+            :listOfValues="tests[selectedTest].exercises"
             propertyName="name"
+            class="inline"
           />
-          <div class="border items-center py-6">
+          <button
+            class="inline absolute right-0 p-2 rounded-md bg-gray-100 border px-5 text-gray-800"
+            @click="createExercise()"
+          >
+            Add excercise
+          </button>
+          <div
+            v-if="tests[selectedTest].exercises.length > 0"
+            class="border items-center py-6"
+          >
             <div class="mt-4 max-w-xl mx-auto">
               <label
                 class="align-middle text-gray-700 text-sm font-bold mb-2"
@@ -43,9 +130,7 @@
                 id="description"
                 type="text"
                 v-model="
-                  this.tests[this.selectedTest].exercises[
-                    this.selectedExerciseIndex
-                  ].name
+                  tests[selectedTest].exercises[selectedExerciseIndex].name
                 "
               />
             </div>
@@ -61,9 +146,8 @@
                 id="description"
                 type="text"
                 v-model="
-                  this.tests[this.selectedTest].exercises[
-                    this.selectedExerciseIndex
-                  ].description
+                  tests[selectedTest].exercises[selectedExerciseIndex]
+                    .description
                 "
               />
             </div>
@@ -78,10 +162,8 @@
                 class="ml-2 appearance-none border rounded py-2 px-3 w-40 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                 id="solution"
                 type="number"
-                v-model="
-                  this.tests[this.selectedTest].exercises[
-                    this.selectedExerciseIndex
-                  ].solution
+                v-model.number="
+                  tests[selectedTest].exercises[selectedExerciseIndex].solution
                 "
               />
             </div>
@@ -96,10 +178,8 @@
                 class="ml-2 appearance-none border rounded py-2 px-3 w-20 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                 id="time"
                 type="number"
-                v-model="
-                  this.tests[this.selectedTest].exercises[
-                    this.selectedExerciseIndex
-                  ].time
+                v-model.number="
+                  tests[selectedTest].exercises[selectedExerciseIndex].time
                 "
               />
               <p class="inline text-gray-700 font-light mx-3">seconds</p>
@@ -116,17 +196,22 @@
                 id="type"
                 type="text"
                 v-model="
-                  this.tests[this.selectedTest].exercises[
-                    this.selectedExerciseIndex
-                  ].type
+                  tests[selectedTest].exercises[selectedExerciseIndex].type
                 "
               />
             </div>
-            <div class="mt-4 max-w-xl mx-auto">
+            <div class="mt-4 max-w-xl mx-auto relative">
               <button
                 class="mt-3 rounded-full bg-orange-400 p-2 px-5 focus:outline-none focus:shadow-outline"
+                @click="updateTest()"
               >
                 Update exercise
+              </button>
+              <button
+                class="mt-3 rounded-full bg-gray-100 hover:bg-red-200 border hover:border-red-300 p-2 px-5 absolute right-0 bottom-0 focus:outline-none focus:shadow-outline"
+                @click="removeExercise()"
+              >
+                <img src="@/assets/icons/delete_bin.png" class="w-5" />
               </button>
             </div>
           </div>
@@ -140,6 +225,7 @@
 import Header from "../components/Header";
 import Table from "../components/Table";
 import ButtonSelector from "../components/ButtonSelector";
+
 export default {
   components: {
     Header,
@@ -236,10 +322,74 @@ export default {
           this.tests = tests;
         });
     },
-    loadExercise() {
-      this.selectedExercise = this.test[this.selectedTest].excercises[
-        this.selectedExerciseIndex
-      ];
+    createExercise() {
+      this.selectedExercise = this.tests[this.selectedTest].exercises.push({
+        name: "New exercise",
+        description: "",
+        solution: 0,
+        time: 100,
+      });
+    },
+    createTest() {
+      fetch(`${process.env.VUE_APP_TC_API}/tests`, {
+        method: "POST",
+        headers: {
+          Authorization: localStorage.adminSecret,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          session: this.$route.params.sessionName,
+          name: "New Test",
+          description: "A new test begins",
+          time: 5,
+          peerChange: false,
+          orderNumber: this.orderedTests.length,
+          exercises: [],
+        }),
+      }).then((response) => {
+        if (response.status == 200) {
+          this.loadTests();
+        }
+      });
+    },
+    updateTest() {
+      fetch(
+        `${process.env.VUE_APP_TC_API}/tests/${this.$route.params.sessionName}`,
+        {
+          method: "PUT",
+          headers: {
+            Authorization: localStorage.adminSecret,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(this.tests[this.selectedTest]),
+        }
+      ).then((response) => {
+        if (response.status == 200) {
+          this.loadTests();
+        }
+      });
+    },
+    removeExercise() {
+      this.tests[this.selectedTest].exercises.splice(
+        this.selectedExerciseIndex,
+        1
+      );
+    },
+    removeTest() {
+      fetch(
+        `${process.env.VUE_APP_TC_API}/tests/${this.$route.params.sessionName}/${this.selectedTest}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: localStorage.adminSecret,
+          },
+        }
+      ).then((response) => {
+        if (response.status == 200) {
+          this.selectedTest = 0;
+          this.loadTests();
+        }
+      });
     },
   },
   mounted() {

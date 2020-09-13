@@ -19,6 +19,15 @@
           {{ cell }}
         </td>
       </tr>
+      <tr v-if="body.length == 0">
+        <td
+          v-for="(cell, index) in head"
+          :key="index"
+          class="border px-4 py-2 bg-gray-100 font-thin text-center"
+        >
+          -
+        </td>
+      </tr>
     </tbody>
   </table>
 </template>
@@ -38,7 +47,7 @@ export default {
   methods: {
     clickOnRow(event) {
       this.$refs.table.childNodes.forEach((element) => {
-        element.classList.remove("bg-blue-300");
+        if (element.classList) element.classList.remove("bg-blue-300");
       });
       if (this.value >= 0) {
         event.target.parentElement.classList.toggle("bg-blue-300");
