@@ -72,8 +72,15 @@
             Exercise configuration
           </button>
         </div>
+
         <div class="mt-10 border p-3 rounded-md">
-          <h2 class="mb-3 text-md font-light">Danger zone:</h2>
+          <h2 class="mb-3 text-md font-light">Actions:</h2>
+          <button
+            class="mt-3 ml-2 p-3 rounded-md bg-gray-100 border px-5 text-gray-800 hover:bg-yellow-200 hover:border-yellow-300 hover:text-yellow-800"
+            @click="goToReports()"
+          >
+            See reports
+          </button>
           <button
             class="mt-3 ml-2 p-3 rounded-md bg-gray-100 border px-5 text-gray-800 hover:bg-red-200 hover:border-red-300 hover:text-red-800"
             @click="deleteSession()"
@@ -232,6 +239,11 @@ export default {
             `Session is now ${this.session.active ? "active!" : "inactive!"}`
           );
         }
+      });
+    },
+    goToReports() {
+      this.$router.push({
+        path: `/administration/reports/${this.$route.params.sessionName}`,
       });
     },
   },

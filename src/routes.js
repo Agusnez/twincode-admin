@@ -5,6 +5,7 @@ import Playground from "./pages/Playground";
 import Admin from "./pages/Admin";
 import SessionDetails from "./pages/SessionDetails";
 import ExerciseConfiguration from "./pages/ExerciseConfiguration";
+import Reports from "./pages/Reports";
 import IDE from "./pages/IDE";
 import PageNotFound from "./pages/PageNotFound";
 
@@ -37,6 +38,12 @@ const routes = [
     path: "/administration/sessions/:sessionName",
     component: SessionDetails,
     name: "Session details",
+    meta: { title: "Admin console - Twincode" },
+  },
+  {
+    path: "/administration/reports/:sessionName",
+    component: Reports,
+    name: "Reports of session",
     meta: { title: "Admin console - Twincode" },
   },
   {
