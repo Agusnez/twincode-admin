@@ -1,4 +1,10 @@
+<img src="https://twincode.netlify.app/img/tc_color.b44c8b91.png" alt="Twincode logo" width="400" />
+
 # Twincode Frontend
+Twincode is a platform to host pair programming sessions. This project contains the frontend of the platform.
+
+## Demo IDE
+[Click here!](https://twincode.netlify.app/IDE)
 
 ## Project setup
 
